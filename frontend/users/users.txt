@@ -1,0 +1,5 @@
+Alice Smith	alice@example.com	Password123!
+Bob Johnson	bob@example.com	Password123!
+Charlie Brown	charlie@example.com	Password123!
+Diana Prince	diana@example.com	Password123!
+Edward Norton	edward@example.com	Password123!
