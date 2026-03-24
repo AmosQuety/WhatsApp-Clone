@@ -24,6 +24,7 @@ import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import axios from 'axios';
 import { AUTH_HUB_CONFIG } from '../../src/config/auth';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ChatRoom() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,6 +38,7 @@ export default function ChatRoom() {
   const [uploading, setUploading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const group = groups.find(g => g.id === id);
 
@@ -109,10 +111,17 @@ export default function ChatRoom() {
       const formData = new FormData();
       const filename = uri.split('/').pop() || 'image.jpg';
       const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : `image`;
+      const type = match ? `image/${match[1]}` : `image/jpeg`;
 
-      // @ts-ignore
-      formData.append('file', { uri, name: filename, type });
+      if (Platform.OS === 'web') {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        formData.append('file', blob, filename);
+      } else {
+        // @ts-ignore
+        formData.append('file', { uri, name: filename, type });
+      }
+
       formData.append('groupId', id || '');
 
       const response = await axios.post(`${AUTH_HUB_CONFIG.WHATSAPP_BACKEND_URL}/media/upload`, formData, {
@@ -224,7 +233,7 @@ export default function ChatRoom() {
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
       />
 
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <View style={styles.ghostToggleContainer}>
           <Text style={[styles.ghostLabel, isGhostMode && styles.ghostLabelActive]}>
             {isGhostMode ? "Ghost Mode ON" : "Ghost Mode"}

@@ -37,6 +37,7 @@ const Register = () => {
     try {
       await register(name.trim(), email.trim(), password.trim());
     } catch (error: any) {
+      console.log('Full Registration Error Object:', error);
       let errorMessage = error.response?.data?.error || error.response?.data?.message || 'Check your details and try again';
       
       // Handle Zod validation details

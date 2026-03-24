@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AuthStorage } from '../utils/storage';
 import axios from 'axios';
 import { AUTH_HUB_CONFIG } from '../config/auth';
-import { auth } from '../config/firebase'; // ✅ direct instance, not a getter function
+import { getFirebaseAuth } from '../config/firebase'; // ✅ Use getter for lazy initialization
 import { signInWithCustomToken } from 'firebase/auth'; // ✅ correct import (not /react-native)
 
 interface User {
@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
       const { customToken } = response.data;
-      await signInWithCustomToken(auth, customToken); // ✅ use imported `auth` directly
+      await signInWithCustomToken(getFirebaseAuth(), customToken); // ✅ Use lazy initialized auth
       console.log('Firebase synced successfully');
     } catch (error) {
       console.error('Failed to sync Firebase:', error);
@@ -79,8 +79,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
+      console.log(`Login attempt: ${AUTH_HUB_CONFIG.LOGIN_URL}`, { email });
       const response = await axios.post(AUTH_HUB_CONFIG.LOGIN_URL, { email, password });
-      console.log('Login response:', JSON.stringify(response.data));
+      console.log('Login successful response:', JSON.stringify(response.data));
       const data = response.data;
 
       // Handle both camelCase and snake_case field names from AuthHub
@@ -99,8 +100,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Sync Firebase last, after token is ready
       await syncFirebase(accessToken);
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (error: any) {
+      console.error('Login failed details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   };
@@ -108,13 +113,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string) => {
     try {
       const url = `${AUTH_HUB_CONFIG.BASE_URL}${AUTH_HUB_CONFIG.API_PREFIX}/auth/register`;
+      console.log(`Registration attempt: ${url}`, { name, email });
       const response = await axios.post(url, { name, email, password });
-      console.log('Register response:', JSON.stringify(response.data));
+      console.log('Register successful response:', JSON.stringify(response.data));
 
       // Register only returns { message, userId } — auto-login to get the token
       await login(email, password);
-    } catch (error) {
-      console.error('Registration failed:', error);
+    } catch (error: any) {
+      console.error('Registration failed details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   };

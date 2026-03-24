@@ -146,8 +146,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const startDirectChat = async (targetUid: string, targetName: string) => {
     const response = await apiClient.post('/chats/direct', { 
-      targetUid, 
-      targetName 
+      recipientUid: targetUid, 
+      recipientName: targetName 
     });
     return response.data.id;
   };
