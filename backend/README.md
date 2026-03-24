@@ -23,6 +23,8 @@ This directory contains the backend configuration for the WhatsApp-like React Na
 4.  **Run the server**:
     - Development: `npm run dev`
     - Production: `npm run build && npm start`
+5.  **Run tests**:
+    - `npm test`
 
 ## API Endpoints
 - `POST /groups`: Create a new group.
