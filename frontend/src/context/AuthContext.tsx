@@ -80,7 +80,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       console.log(`Login attempt: ${AUTH_HUB_CONFIG.LOGIN_URL}`, { email });
-      const response = await axios.post(AUTH_HUB_CONFIG.LOGIN_URL, { email, password });
+      const response = await axios.post(AUTH_HUB_CONFIG.LOGIN_URL, {
+        email,
+        password,
+        client_id: AUTH_HUB_CONFIG.CLIENT_ID,  // ← scopes login to WhatsApp Copy's tenant
+      });
       console.log('Login successful response:', JSON.stringify(response.data));
       const data = response.data;
 
@@ -114,7 +118,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const url = `${AUTH_HUB_CONFIG.BASE_URL}${AUTH_HUB_CONFIG.API_PREFIX}/auth/register`;
       console.log(`Registration attempt: ${url}`, { name, email });
-      const response = await axios.post(url, { name, email, password });
+      const response = await axios.post(url, {
+        name,
+        email,
+        password,
+        client_id: AUTH_HUB_CONFIG.CLIENT_ID,  // ← stamps tenant_id on the new user
+      });
       console.log('Register successful response:', JSON.stringify(response.data));
 
       // Register only returns { message, userId } — auto-login to get the token
